@@ -19,6 +19,14 @@ const levelFunction = (levels: number[]) => {
     }
 }
 
+const part2MapReducer = (levels: number[]) => {
+    for (let i = 0; i < levels.length; i++) {
+        const filtered = levels.filter((_, index) => index !== i)
+        if (levelFunction(filtered) === 1) return 1
+    }
+    return 0
+}
+
 const part1 = (rawInput: string) => {
     return parseInput(rawInput)
         .map(reportSplitter)
@@ -28,9 +36,11 @@ const part1 = (rawInput: string) => {
 }
 
 const part2 = (rawInput: string) => {
-    const input = parseInput(rawInput)
-
-    return
+    return parseInput(rawInput)
+        .map(reportSplitter)
+        .map(part2MapReducer)
+        .reduce(sumReducer, 0)
+        .toString()
 }
 
 run({
@@ -65,7 +75,7 @@ run({
     part2: {
         tests: [
             {
-              input: `
+                input: `
             7 6 4 2 1
             1 2 7 8 9
             9 7 6 2 1
@@ -73,11 +83,11 @@ run({
             8 6 4 4 1
             1 3 6 7 9
             `,
-              expected: "4",
+                expected: "4",
             },
         ],
         solution: part2,
     },
     trimTestInputs: true,
-    onlyTests: true,
+    onlyTests: false,
 })
