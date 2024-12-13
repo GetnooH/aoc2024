@@ -1,7 +1,5 @@
 import run from "aocrunner"
 
-type Direction = { name: string, x: number, y: number }
-
 class Cell {
     constructor(public letter: string, public x: number, public y: number) {
     }
@@ -9,23 +7,15 @@ class Cell {
     toString() {
         return `${this.letter}|${this.x}/${this.y}`
     }
-}
 
-let directions: Direction[] =
-    [
-        ['R', 1, 0],
-        ['RD', 1, 1],
-        ['D', 0, 1],
-        ['LD', -1, 1],
-        ['L', -1, 0],
-        ['UL', -1, -1],
-        ['U', 0, -1],
-        ['UR', 1, -1],
-    ].map((item): Direction => ({
-        name: item[0] as string,
-        x: item[1] as number,
-        y: item[2] as number
-    }))
+    getHash() {
+        return Cell.computeHash(this.x, this.y);
+    }
+
+    static computeHash(x: number, y: number){
+        return `${x}-${y}`
+    }
+}
 
 const columnSplitter = (line: string, lineIndex: number) => {
     return line.split("").map((letter, index): Cell => new Cell(letter, index, lineIndex))
@@ -38,6 +28,25 @@ const parseInput = (rawInput: string) => rawInput
 const sumReducer = (a: number, b: number) => a + b
 
 const part1 = (rawInput: string) => {
+
+    type Direction = { name: string, x: number, y: number }
+
+    let directions: Direction[] =
+        [
+            ['R', 1, 0],
+            ['RD', 1, 1],
+            ['D', 0, 1],
+            ['LD', -1, 1],
+            ['L', -1, 0],
+            ['UL', -1, -1],
+            ['U', 0, -1],
+            ['UR', 1, -1],
+        ].map((item): Direction => ({
+            name: item[0] as string,
+            x: item[1] as number,
+            y: item[2] as number
+        }))
+
     const lines = rawInput.split("\n")
     const maxX = lines[0].length - 1
     const maxY = lines.length - 1
@@ -73,9 +82,48 @@ const part1 = (rawInput: string) => {
 }
 
 const part2 = (rawInput: string) => {
-    const input = parseInput(rawInput)
+    const lines = rawInput.split("\n")
+    const maxX = lines[0].length - 1
+    const maxY = lines.length - 1
+    const letters = new Map<string, Cell>()
+    const As: Cell[] = []
+    const cells = parseInput(rawInput)
+    cells.forEach(cell => {
+        letters.set(cell.getHash(), cell)
+        if (cell.letter === "A") {
+            As.push(cell)
+        }
+    })
 
-    return
+    const result: number = As
+        .filter((cell) => {
+            // Ne concerne pas les cellules au bord
+            return cell.x !== 0
+                && cell.x !== maxX
+                && cell.y !== 0
+                && cell.y !== maxY
+        })
+        .map((cell) => {
+
+            /*
+            * M.M S.M S.S M.S
+            * .A. .A. .A. .A.
+            * S.S S.M M.M M.S
+            **/
+            const UL = letters.get(Cell.computeHash(cell.x-1, cell.y-1))?.letter ?? '.'
+            const UR = letters.get(Cell.computeHash(cell.x+1, cell.y-1))?.letter ?? '.'
+            const DL = letters.get(Cell.computeHash(cell.x-1, cell.y+1))?.letter ?? '.'
+            const DR = letters.get(Cell.computeHash(cell.x+1, cell.y+1))?.letter ?? '.'
+
+            if (![UL, UR, DL, DR].every(letter => ['M', 'S'].includes(letter))) return 0
+            if (UL === DR) return 0
+            if (DL === UR) return 0
+
+            return 1
+        })
+        .reduce(sumReducer, 0)
+
+    return "" + result
 }
 
 run({
@@ -119,10 +167,29 @@ M
     },
     part2: {
         tests: [
-            // {
-            //   input: ``,
-            //   expected: "",
-            // },
+            {
+                input: `
+MMMSXXMASM
+MSAMXMSMSA
+AMXSXMAAMM
+MSAMASMSMX
+XMASAMXAMM
+XXAMMXXAMA
+SMSMSASXSS
+SAXAMASAAA
+MAMMMXMMMM
+MXMXAXMASX
+              `,
+                expected: "9",
+            },
+            {
+                input: `
+MAS
+MAS
+MAS
+`,
+                expected: "1",
+            },
         ],
         solution: part2,
     },
