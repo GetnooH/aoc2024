@@ -1,6 +1,12 @@
 import run from "aocrunner"
 
+const inputLineMapper = (rawLine: string) => {
+    return rawLine.split("")
+}
+
 const parseInput = (rawInput: string) => rawInput
+    .split('\n')
+    .map(inputLineMapper)
 
 const part1 = (rawInput: string) => {
     const input = parseInput(rawInput)
@@ -17,10 +23,10 @@ const part2 = (rawInput: string) => {
 run({
     part1: {
         tests: [
-            // {
-            //   input: ``,
-            //   expected: "",
-            // },
+            {
+              input: ``,
+              expected: "",
+            },
         ],
         solution: part1,
     },
