@@ -1,5 +1,9 @@
 import run from "aocrunner"
 
+const sum = (a: number, b: number) => a + b
+const toNumber = (a: string) => Number(a.trimStart().trimEnd())
+const notEmpty = (a: string) => a !== ""
+
 const inputLineMapper = (rawLine: string) => {
     return rawLine.split("")
 }

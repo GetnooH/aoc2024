@@ -1,7 +1,8 @@
 import run from "aocrunner"
 
 const sum = (a: number, b: number) => a + b
-const toNumber = (a: string) => Number(a.trimStart().trimEnd())
+const mapToNumber = (a: string) => Number(a.trimStart().trimEnd())
+const mapToString = (a: number) => a.toString()
 const notEmpty = (a: string) => a !== ""
 
 const inputLineMapper = (rawLine: string) => {
@@ -11,7 +12,7 @@ const inputLineMapper = (rawLine: string) => {
         items: splitLine[1]
             .split(" ")
             .filter(notEmpty)
-            .map(toNumber),
+            .map(mapToNumber),
     }
 }
 
@@ -20,7 +21,7 @@ const buildOperatorCombinationList = (length: number, values: string[]) => {
         .map(i => i.toString(values.length)
             .padStart(length, "0")
             .split("")
-            .map(toNumber)
+            .map(mapToNumber)
             .map(index => values[index]))
 }
 
@@ -32,7 +33,7 @@ const part1 = (rawInput: string) => {
     const input = parseInput(rawInput)
 
     const cache = new Map<number, string[][]>()
-    for (let i = 1; i <= 12; ++i) {
+    for (let i = 1; i <= 11; ++i) {
         cache.set(i, buildOperatorCombinationList(i, ["+", "*"]))
     }
 
@@ -57,7 +58,32 @@ const part1 = (rawInput: string) => {
 const part2 = (rawInput: string) => {
     const input = parseInput(rawInput)
 
-    return
+    const cache = new Map<number, string[][]>()
+    for (let i = 1; i <= 11; ++i) {
+        cache.set(i, buildOperatorCombinationList(i, ["+", "*", "||"]))
+    }
+
+    const compute = (line: { result: number; items: number[] }, signs: string[]) => {
+        let localSigns = [...signs]
+        return line.items.reduce((a, b) => {
+            const sign = localSigns.shift()
+            switch (sign) {
+                case "+":
+                    return a + b
+                case "*":
+                    return a * b
+                case "||":
+                    return Number(`${a}${b}`)
+                default:
+                    return b
+            }
+        });
+    }
+
+    return "" + input.map(line => {
+        let gotSome = cache.get(line.items.length - 1)?.some((signs) => compute(line, signs) === line.result)
+        return gotSome ? line.result : 0
+    }).reduce(sum, 0)
 }
 
 run({
@@ -100,5 +126,5 @@ run({
         solution: part2,
     },
     trimTestInputs: true,
-    onlyTests: true,
+    onlyTests: false,
 })
