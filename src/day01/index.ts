@@ -1,33 +1,42 @@
 import run from "aocrunner"
+import {pairsToArraysReducer, stringNotEmpty, sum, toNumber} from "../utils/Predicates.js"
+import {EOL} from "node:os";
+import {Pair} from "../utils/Types";
 
-const parseInput = (rawInput: string) => rawInput.split('\n').map(line => line.split('   '))
+
+const splitLines = (rawInput: string) => rawInput.split(EOL)
+
+const lineToPairParser = (line: string): Pair<number> => {
+    const map = line.trim()
+        .split('   ')
+        .filter(stringNotEmpty)
+        .map(toNumber)
+    if (map.length !== 2) throw new Error(`Parsing error on line ${line}. Got [${map.join(', ')}]`)
+    return [map[0], map[1]]
+}
 
 const part1 = (rawInput: string) => {
-    const input = parseInput(rawInput)
-    let l1: number[] = []
-    let l2: number[] = []
-    input.forEach(pair => {
-        l1.push(Number.parseInt(pair[0]))
-        l2.push(Number.parseInt(pair[1]))
-    })
+    const [l1, l2] = splitLines(rawInput)
+        .map(lineToPairParser)
+        .reduce(pairsToArraysReducer<number>, [[], []])
 
-    l1.sort((a, b) => a - b)
-    l2.sort((a, b) => a - b)
+    l1.sort()
+    l2.sort()
 
-    let result = 0
-    for (let i = 0; i < l1.length; i++) {
-        result += Math.abs(l1[i] - l2[i])
-    }
+    const result = l1
+        .map((l1Value,index) => Math.abs(l1Value - l2[index]))
+        .reduce(sum)
+
     return "" + result
 }
 
 const part2 = (rawInput: string) => {
-    const input = parseInput(rawInput)
+    const input = splitLines(rawInput).map(lineToPairParser)
     let l1: number[] = []
     let l2 = new Map<number, number>()
     input.forEach(pair => {
-        l1.push(Number.parseInt(pair[0]))
-        let bob = Number.parseInt(pair[1])
+        l1.push(pair[0])
+        let bob = pair[1]
         l2.set(bob, (l2.get(bob) ?? 0) + 1)
     })
 
